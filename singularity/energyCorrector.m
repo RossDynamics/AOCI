@@ -8,29 +8,47 @@ mu = cg(c,'p.mu');
 %A fun trick to avoid an if statement
 bodypos = [(mass-1)-mu
            0];
-
-position = [bodypos(1) + r*cos(theta)
-            bodypos(2) + r*sin(theta)];
-
+       
+bodyiner = r2i(0,[bodypos; 0; 0]);
+       
 energyHandle = getEnergyHandle(c);
 
 %We guess an initial radial velocity
-radialGuess = 1;
+radialGuess = 14;
 
 function en = radialEnergy(radialVel)
-    attempt = [position
-                    radialVel * cos(theta)
-                    radialVel * sin(theta)
-                    0];
+    
+    ineroffset = [r*cos(theta)
+                  r*sin(theta)
+                  radialVel*cos(theta)
+                  radialVel*sin(theta)];
+              
+   attempt = [i2r(0,bodyiner+ineroffset)
+              0]; 
+              
+   % attempt = [position
+   %                 radialVel * cos(theta)
+   %                 radialVel * sin(theta)
+   %                 0];
     en = energyHandle(0,attempt) - energy;
 end
 
+%radialVel = radialGuess;
+
 radialVel = fzero(@radialEnergy,radialGuess);
 
-correctedIC = [position
-               radialVel * cos(theta)
-               radialVel * sin(theta)
-               0];
+ineroffset = [r*cos(theta)
+               r*sin(theta)
+               radialVel*cos(theta)
+               radialVel*sin(theta)];
+           
+correctedIC = [i2r(0,bodyiner+ineroffset)
+              0]; 
+
+% correctedIC = [position
+%                radialVel * cos(theta)
+%                radialVel * sin(theta)
+%                0];
 
 end
 
