@@ -3,6 +3,9 @@
 %A version of the code specifically adapted to compute cluster use.
 function hitpts = manifoldToArchSectionCluster(numPos,numEnergies)
 
+%This creates a conflict on tinkercliffs, so we burninate it
+rmpath('/apps/packages/matlab/R2021a/toolbox/robust/rctobsolete/mutools/commands/')
+
 c = Sun_Jupiter_LCR_PCR3BP_Context_Integtime;
 
 aocomega = deg2rad(2.738332953159384e2);
