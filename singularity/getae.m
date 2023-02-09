@@ -1,8 +1,8 @@
-function [a,e,omega] = getae(points,primary,L,c)
+function [a,e,omega,energies] = getae(points,primary,L,c)
 %GETAE Gets the a and e values with respect to primary (can be either 1 or
 %2) of a collection of phase space points. L is the factor used to convert
 %nondimensional coordinates back into dimensional coordinates. Now also
-%gets omega, the argument of periapsis!
+%gets omega, the argument of periapsis, and the Keplerian energy!
 
 %we have to distinguish between the 3 body and 2 body mu here
 mu3bdy = cg(c,'p.mu');

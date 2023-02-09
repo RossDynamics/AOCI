@@ -1,5 +1,6 @@
 %Integrates the stable manifold to the m_2 singularity backwards to the
-%surface of section used to generate the arches of chaos plots.
+%surface of section used to generate the arches of chaos plots. 
+%Requires the use of Sun_Jupiter_LCR_PCR3BP_Context_Integtime.
 
 aocomega = deg2rad(2.738332953159384e2);
 M = deg2rad(10.684213694231330e1);
@@ -50,8 +51,8 @@ thetas = linspace(0,2*pi,numPos+1);
 thetas = thetas(1:end-1);
 dispCircle = [cos(thetas); sin(thetas)];
 
-energyRange = linspace(-1.5194,0,800);
-%energyRange = linspace(-1.1413,0,200);
+%energyRange = linspace(-1.5194,0,800);
+energyRange = linspace(-1.1413,0,200);
 
 c = cs(c,'s.i.odeopts',odeset('Events',@(t,y)toAOCsection(t,y,mu,aocomega,...
                       M,epochAngle,Tscale,standardEndTime),'RelTol',3e-14,'AbsTol',1e-15));
@@ -123,7 +124,7 @@ for j = 1:numel(energyRange)
             hitpts(j,i,:) = ytrajbd(:,end);
             disp('Hit')
             disp(i)
-            disp(solbd.y(5,end))
+            %disp(solbd.y(5,end))
             
 %             cplot(ytrajbd,c);
 %             cplot(ytrajbd(:,end),c,'o');
@@ -132,9 +133,8 @@ for j = 1:numel(energyRange)
 
         end
         
-        disp(solbd.ie)
-        
-         
+        %disp(solbd.ie)
+
     end
     
     flathitpts = reshape(hitpts,[],4)';

@@ -1,5 +1,6 @@
 %An analysis of initial conditions on different sides of the manifold
-%at a fixed radius.
+%at a fixed radius. If this script is being called by
+%calcPatchedFullError, then neither rpd and scaling should be initialized!
 
 close all;
 
@@ -19,21 +20,26 @@ mu = cg(c,'p.mu');
 
 %We create 2n initial conditions; n are on one side of the manifold, and n
 %are on the other side of it.
-n = 200;
+n = 400;
 
-%We construct the detection surface of section. We need to square the
-%desired radius (in standard coordinates) to express it properly in 
-%Levi-Civita coords
+%We construct the detection surface of section. We need to take the 
+%square root of the desired radius (in standard coordinates) to express it
+%properly in Levi-Civita coords
 rh = (mu/3)^(1/3);
-scaling = 12%1.44%15;
-detectDist = (rh*scaling)^2;
+%scaling = 7;
+%scaling = 1;%8%1.44%15;
+detectDistStd = rh*scaling;
+detectDist = sqrt(detectDistStd);
 
 %This is the radius at which the initial conditions will be generated; it
 %corresponds to the closest encounter with the singularity.
-%rpd = Jr/20;
+%rpd = Jr;
 %rpd = 0.5030690810017047*Jr;
 %rpd = 0.5030690810017048*Jr;
-rpd = Jr;
+%rpd =Jr/10;
+%rpd = Jr/40;
+%rpd = Jr/180;
+
 
 %We generate an array of different theta values, corresponding to different
 %points of tangency on the periapse circle. We generate an extra value at 
@@ -110,7 +116,7 @@ for i = 1:numel(theta)
     
     %We this thetadot as a guess for the next one.
     plusguess = plusthetadot;
-    minusguess = minusthetadot
+    minusguess = minusthetadot;
         
     up(:,i) = m2polar2cart([rpd theta(i) 0 plusthetadot].',mu);
     down(:,i) = m2polar2cart([rpd theta(i) 0 minusthetadot].',mu);
@@ -278,7 +284,7 @@ hold on;
 % plot(theta,epd,'r.-')
 
 %We plot the eccentricity plots:
-[apufd,epufd] = getae(endufdsorted,1,L,c);
+[apufd,epufd,omegaufd,energiesufd] = getae(endufdsorted,1,L,c);
 plot(endubdthetas,epufd,'b-')
 xlabel('Pre-encounter theta (+ trajectories)')
 ylabel('Post-encounter eccentricity (+ trajectories)')
@@ -286,15 +292,15 @@ ylabel('Post-encounter eccentricity (+ trajectories)')
 figure;
 hold on;
 
-[apufd,epufd] = getae(endubdsorted,1,L,c);
-plot(endubdthetas,epufd,'b-')
+[apubd,epubd,omegaubd,energiesubd] = getae(endubdsorted,1,L,c);
+plot(endubdthetas,epubd,'b-')
 xlabel('Pre-encounter theta (+ trajectories)')
 ylabel('Pre-encounter eccentricity (+ trajectories)')
 
 figure;
 hold on;
 
-[apdfd,epdfd] = getae(enddfdsorted,1,L,c);
+[apdfd,epdfd,omegadfd,energiesdfd] = getae(enddfdsorted,1,L,c);
 plot(enddbdthetas,epdfd,'r-')
 xlabel('Pre-encounter theta (- trajectories)')
 ylabel('Post-encounter eccentricity (- trajectories)')
@@ -302,8 +308,8 @@ ylabel('Post-encounter eccentricity (- trajectories)')
 figure;
 hold on;
 
-[apdfd,epdfd] = getae(enddbdsorted,1,L,c);
-plot(enddbdthetas,epdfd,'r-')
+[apdbd,epdbd,omegadbd,energiesdbd] = getae(enddbdsorted,1,L,c);
+plot(enddbdthetas,epdbd,'r-')
 xlabel('Pre-encounter theta (- trajectories)')
 ylabel('Pre-encounter eccentricity (- trajectories)')
 
@@ -338,3 +344,228 @@ legend('Pre-encounter dist','Post-encounter dist')
 %postdist / predist:
 figure; 
 plot(enddbdthetas,postdist./predist)
+
+%We plot comparisons of the semi-major axes before the encounter and
+%after the encounter
+figure;
+hold on;
+plot(endubdthetas,apubd)
+plot(endubdthetas,apufd)
+xlabel('$\theta^+_{pre}$','Interpreter','Latex')
+xticks([-pi,-pi/2,0,pi/2,pi])
+xticklabels({'-\pi','-0.5\pi','0','0.5\pi','\pi'})
+xlim([-pi,pi])
+legend('+ trajectories'' SMA w.r.t primary before encounter',...
+       '+ trajectories'' SMA w.r.t primary after encounter')
+
+figure;
+hold on;
+plot(enddbdthetas,apdbd)
+plot(enddbdthetas,apdfd)
+xlabel('$\theta^-_{pre}$','Interpreter','Latex')
+xticks([-pi,-pi/2,0,pi/2,pi])
+xticklabels({'-\pi','-0.5\pi','0','0.5\pi','\pi'})
+xlim([-pi,pi])
+legend('- trajectories'' SMA w.r.t primary before encounter',...
+       '- trajectories'' SMA w.r.t primary after encounter')
+   
+%We plot comparisons of the argument of perigee before the encounter and
+%after the encounter
+figure;
+hold on;
+plot(endubdthetas,omegaubd)
+plot(endubdthetas,omegaufd)
+xlabel('$\theta^+_{pre}$','Interpreter','Latex')
+xticks([-pi,-pi/2,0,pi/2,pi])
+xticklabels({'-\pi','-0.5\pi','0','0.5\pi','\pi'})
+xlim([-pi,pi])
+legend('+ trajectories'' AOP w.r.t primary before encounter',...
+       '+ trajectories'' AOP w.r.t primary after encounter')
+
+figure;
+hold on;
+plot(enddbdthetas,omegadbd)
+plot(enddbdthetas,omegadfd)
+xlabel('$\theta^-_{pre}$','Interpreter','Latex')
+xticks([-pi,-pi/2,0,pi/2,pi])
+xticklabels({'-\pi','-0.5\pi','0','0.5\pi','\pi'})
+xlim([-pi,pi])
+legend('- trajectories'' AOP w.r.t primary before encounter',...
+       '- trajectories'' AOP w.r.t primary after encounter')
+   
+%We plot the "spikes" in the semi-major axis graph
+[~,examplebd] = max(apubd);
+%examplebd = 300;
+[~,examplelc] = standard2lc(0,endubdsorted(:,examplebd),mu);
+
+examplesol=integ(linspace(0,6*endtime,2000),examplelc,c);
+timesexample = linspace(examplesol.x(1),examplesol.x(end),2000);
+[exampletimesstandard,examplepts] = lc2standard(timesexample,deval(timesexample,examplesol),mu);
+                                
+exampleplot = figure;
+hold on;
+cplot(examplepts,c);
+
+figure;
+[apuexample,epuexample,omegauexample] = getae(examplepts,1,L,c);
+plot(timesexample,apuexample)
+hold on;
+[examplemaxval,examplemaxi] = max(apuexample);
+scatter(timesexample(examplemaxi),examplemaxval)
+
+figure(exampleplot);
+cplot(examplepts(:,examplemaxi),c,'o')
+
+%We plot comparisons of the semi-major axes before the encounter and
+%after the encounter
+figure;
+hold on;
+plot(endubdthetas,apubd)
+plot(endubdthetas,apufd)
+xlabel('$\theta^+_{pre}$','Interpreter','Latex')
+xticks([-pi,-pi/2,0,pi/2,pi])
+xticklabels({'-\pi','-0.5\pi','0','0.5\pi','\pi'})
+xlim([-pi,pi])
+legend('+ trajectories'' SMA w.r.t primary before encounter',...
+       '+ trajectories'' SMA w.r.t primary after encounter')
+
+figure;
+hold on;
+plot(enddbdthetas,apdbd)
+plot(enddbdthetas,apdfd)
+xlabel('$\theta^-_{pre}$','Interpreter','Latex')
+xticks([-pi,-pi/2,0,pi/2,pi])
+xticklabels({'-\pi','-0.5\pi','0','0.5\pi','\pi'})
+xlim([-pi,pi])
+legend('- trajectories'' SMA w.r.t primary before encounter',...
+       '- trajectories'' SMA w.r.t primary after encounter')
+   
+%%
+
+c = cs(c,'s.i.odeopts',odeset('Events', @(t,y)withinRadius(t,y,0,...
+                       4*detectDist,1,1),'RelTol',3e-14,'AbsTol',1e-15));
+
+%We plot comparisons of the Keplerian energy before the encounter and
+%after the encounter
+[~,highlighti]=min(abs(energiesubd-energiesufd))
+%highlighti = 170;
+%highlighti = 50;
+figure;
+subplot(2,2,1);
+hold on;
+plot(endubdthetas,energiesubd,'b.')
+plot(endubdthetas,energiesufd,'b-')
+%plot(enddbdthetas,energiesdbd,'r.')
+plot(enddbdthetas,energiesdfd,'r-')
+scatter(endubdthetas(highlighti),energiesubd(highlighti),'bo')
+scatter(endubdthetas(highlighti),energiesdbd(highlighti),'ro')
+scatter(endubdthetas(highlighti),energiesufd(highlighti),'bo')
+scatter(endubdthetas(highlighti),energiesdfd(highlighti),'ro')
+xlabel('$\theta^+_{pre}$','Interpreter','Latex')
+xticks([-pi,-pi/2,0,pi/2,pi])
+xticklabels({'-\pi','-0.5\pi','0','0.5\pi','\pi'})
+xlim([-pi,pi])
+legend('$E^\pm_{pre}$ w.r.t $m_1$',...
+       '$E^+_{post}$ w.r.t $m_1$',... %'$E^-_{pre}$ w.r.t $m_1$',...
+       '$E^-_{post}$ w.r.t $m_1$',...
+       'Highlighted + trajectory','Highlighted - trajectory',...
+       'Interpreter','Latex')
+fplot(@(x)0,'k-')
+title('(a)','Interpreter','Latex')
+%set(gca,'FontSize',20);
+
+%We plot the highlighted trajectory in the rotating frame
+subplot(2,2,2);
+[~,highlightlcu] = standard2lc(0,endubdsorted(:,highlighti),mu);
+[~,highlightlcd] = standard2lc(0,enddbdsorted(:,highlighti),mu);
+
+highlightsolu=integ(linspace(0,3*endtime,2000),highlightlcu,c);
+highlightsold=integ(linspace(0,3*endtime,2000),highlightlcd,c);
+timeshighlightu = linspace(highlightsolu.x(1),highlightsolu.x(end),2000);
+timeshighlightd = linspace(highlightsold.x(1),highlightsold.x(end),2000);
+[highlightstdtimesu,highlightptsu] = lc2standard(timeshighlightu,...
+                                  deval(timeshighlightu,highlightsolu),mu);
+[highlightstdtimesd,highlightptsd] = lc2standard(timeshighlightd,...
+                                  deval(timeshighlightd,highlightsold),mu);
+cplot(highlightptsu,c,'b-')
+hold on;
+cplot(highlightptsd,c,'r-')
+cplot(highlightptsu(:,1),c,'ko')
+cplot(highlightptsd(:,1),c,'ko')
+xlabel('$x$','Interpreter','Latex')
+ylabel('$y$','Interpreter','Latex')
+legend('Highlighted + trajectory',...
+       'Highlighted - trajectory',...
+       'Backwards initial condition','Interpreter','Latex')
+axis square;
+%set(gca,'FontSize',20);
+set(gca,'YAxisLocation','right');
+title('(b)','Interpreter','Latex')
+
+%We plot the evolution of the argument of perigee
+subplot(2,2,3);
+hold on;
+[~,discontubd] = max(abs(diff(omegaubd)));
+omegaubd(discontubd) = NaN;
+[~,discontufd] = max(abs(diff(omegaufd)));
+omegaufd(discontufd) = NaN;
+[~,discontdbd] = max(abs(diff(omegadbd)));
+omegadbd(discontdbd) = NaN;
+[~,discontdfd] = max(abs(diff(omegadfd)));
+omegadfd(discontdfd) = NaN;
+plot(endubdthetas,omegaubd,'b.')
+plot(endubdthetas,omegaufd,'b-')
+%plot(enddbdthetas,omegadbd,'r.')
+plot(enddbdthetas,omegadfd,'r-')
+scatter(endubdthetas(highlighti),omegaubd(highlighti),'bo')
+scatter(endubdthetas(highlighti),omegadbd(highlighti),'ro')
+scatter(endubdthetas(highlighti),omegaufd(highlighti),'bo')
+scatter(endubdthetas(highlighti),omegadfd(highlighti),'ro')
+xlabel('$\theta^+_{pre}$','Interpreter','Latex')
+xticks([-pi,-pi/2,0,pi/2,pi])
+xticklabels({'-\pi','-0.5\pi','0','0.5\pi','\pi'})
+xlim([-pi,pi])
+yticks([-pi,-pi/2,0,pi/2,pi])
+yticklabels({'-\pi','-0.5\pi','0','0.5\pi','\pi'})
+ylim([-pi,pi])
+legend('$\omega^\pm_{pre}$ w.r.t $m_1$',...
+'$\omega^+_{post}$ w.r.t $m_1$',...%'$\omega^-_{pre}$ w.r.t $m_1$',...
+'$\omega^-_{post}$ w.r.t $m_1$',...
+'Highlighted + trajectory','Highlighted - trajectory',...
+'Interpreter','Latex')
+fplot(@(x)0,'k-')
+%set(gca,'FontSize',20);
+title('(c)','Interpreter','Latex')
+
+%We plot the example trajectory in the inertial frame, using as our zero
+%time the close encounter time (which is equal to the negation of the
+%backwards detection circle intercept time)
+[~,highlightceiu] = min(vecnorm(highlightptsu(1:2,:) - [1 - mu, 0]'));
+[~,highlightceid] = min(vecnorm(highlightptsd(1:2,:) - [1 - mu, 0]'));
+highlightcetu = highlightstdtimesu(highlightceiu);
+highlightcetd = highlightstdtimesu(highlightceid);
+%We have to use a for loop because annoyingly r2i doesn't work with
+%multiple times at once
+for i = 1:numel(highlightstdtimesu)
+    highlightptsiu(:,i) = r2i(highlightstdtimesu(i) - highlightcetu,...
+                            highlightptsu(:,i));
+end
+for i = 1:numel(highlightstdtimesd)
+    highlightptsid(:,i) = r2i(highlightstdtimesd(i) - highlightcetd,...
+                            highlightptsd(:,i));
+end
+subplot(2,2,4);
+cplot(highlightptsiu,c,'b-')
+hold on;
+cplot(highlightptsid,c,'r-')
+cplot(highlightptsiu(:,1),c,'ko')
+cplot(highlightptsid(:,1),c,'ko')
+xlabel('$x$','Interpreter','Latex')
+ylabel('$y$','Interpreter','Latex')
+legend('Highlighted + trajectory',...
+       'Highlighted - trajectory',...
+       'Backwards initial condition','Interpreter','Latex')
+axis square;
+%set(gca,'FontSize',20);
+set(gca,'YAxisLocation','right');
+title('(d)','Interpreter','Latex')

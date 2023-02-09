@@ -20,15 +20,16 @@ Tscale = T/(2*pi);
 
 %This is used to put an upper bound on how long the integrator is allowed
 %to integrate before it is interrupted. It should ideally be rather large. 
-explorerEndTimeInLC = 0.2;
+explorerEndTimeInLC = -12;
+%explorerEndTimeInLC = -4;
 
 mu = cg(c,'p.mu');
 
 %We create a circle of initial conditions in position space
-numPos = 50;
+numPos = 40;
 posDisplacement = 1e-7;
 
-thetas = linspace(0,2*pi,numPos);
+thetas = linspace(0.5,2*pi+0.5,numPos);
 dispCircle = [cos(thetas); sin(thetas)];
 
 energy = -1.3;
@@ -43,7 +44,9 @@ c = startCaching(c);
 
 surfpts = [];
 
-times = linspace(0,explorerEndTimeInLC,50);
+firstpt = linspace(0,1,50);
+
+times = linspace(0,explorerEndTimeInLC,400);
  
 for i = 1:size(dispCircle,2)
     
@@ -55,7 +58,7 @@ for i = 1:size(dispCircle,2)
     velAtEnergy = fzero(@(vel)(eHandle(0,...
         [positions;...
         vel*vec + [0 -1; 1 0]*positions;0])...
-        -energy), 10);
+        -energy), -10);
     
     %         disp('Refined velocity:')
     %         disp(velAtEnergy)
@@ -87,4 +90,22 @@ xmat = reshape(surfpts(:,1,:),[],numel(times));
 ymat = reshape(surfpts(:,2,:),[],numel(times));
 zmat = reshape(surfpts(:,3,:),[],numel(times));
 
-%surf(xmat,ymat,zmat,'FaceLighting','gouraud','FaceColor','interp')
+close all;
+surfplt = surf(xmat,ymat,zmat,'FaceLighting','gouraud','FaceColor','interp')
+
+timenum = numel(times)
+
+while 1
+    hold all;
+    for i = 2:timenum
+        pause(0.05)
+        set(surfplt,'XData',xmat(:,1:i),'YData',ymat(:,1:i),...
+            'ZData',zmat(:,1:i));
+        %campos([4,3,100])
+        %camorbit(1,0)
+        xyfactor = (1.5*i/timenum)^3
+        axis square;
+        drawnow
+    end
+    pause
+end
